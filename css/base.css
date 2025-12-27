@@ -1,0 +1,112 @@
+/* SOUBOR: css/base.css (v5.0 - Core & Layout) */
+/* POPIS: Proměnné, Reset, Typografie, Layout a Utility. */
+
+/* --- 1. VARIABLES (Golden Edition - Light Mode Only) --- */
+:root {
+  /* PALETTE */
+  --c-bg: #F2F2F7;           
+  --c-card: #FFFFFF;         
+  --c-text-main: #000000;
+  --c-text-muted: #8E8E93;   
+  --c-border: #E5E5EA;
+  --c-input-bg: #F2F2F7;
+  
+  /* BRAND COLORS (Apple Standard) */
+  --c-green: #34C759;        /* Success / Active Tab */
+  --c-green-hover: #2DA84E;
+  --c-red: #FF3B30;          /* Danger */
+  --c-red-hover: #D73328;
+  --c-blue: #007AFF;         /* Links */
+  --c-gold: #FFCC00;         /* Warning / Pending */
+  
+  /* DIMENSIONS */
+  --radius: 12px;            
+  --radius-sm: 8px;          
+  --radius-pill: 50px;       
+  
+  /* SHADOWS (Soft & Deep) */
+  --shadow: 0 4px 20px rgba(0,0,0,0.06);
+  --shadow-hover: 0 8px 30px rgba(0,0,0,0.12);
+  --shadow-float: 0 10px 40px rgba(0,0,0,0.15);
+  
+  /* TRANSITIONS */
+  --trans-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --trans-spring: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* --- 2. RESET & TYPOGRAPHY --- */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--c-bg);
+  color: var(--c-text-main);
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: 700; letter-spacing: -0.02em; }
+p { margin: 0 0 1em 0; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+/* --- 3. LAYOUT UTILS --- */
+.app-container {
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Helper Classes */
+.hidden { display: none !important; }
+.full-width { width: 100%; }
+
+/* Spacing */
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-4 { margin-top: 1rem; }
+.py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+
+/* Alignment */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+.align-center { display: flex; align-items: center; justify-content: center; }
+
+/* Colors & Text Styles */
+.text-muted { color: var(--c-text-muted); }
+.text-primary { color: var(--c-text-main); font-weight: 700; }
+.text-accent { color: var(--c-gold); font-weight: 700; }
+.text-green { color: var(--c-green); font-weight: 700; }
+.font-bold { font-weight: 700; }
+
+/* --- 4. ANIMATIONS --- */
+@keyframes fadeUp { 
+  from { opacity: 0; transform: translateY(15px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+}
+
+@keyframes slideUp { 
+  from { transform: translateY(100%); } 
+  to { transform: translateY(0); } 
+}
+
+.anim { 
+  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+  opacity: 0; 
+}
+.d-1 { animation-delay: 0.05s; }
+.d-2 { animation-delay: 0.1s; }
+.d-3 { animation-delay: 0.15s; }

@@ -1,27 +1,19 @@
 <!DOCTYPE html>
 <html lang="cs">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#F2F2F7"> <title>Plánování Směn</title>
-  
-  <script>
-    (function() {
-      try {
-        const localTheme = localStorage.getItem('theme');
-        const sysTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (localTheme === 'dark' || (!localTheme && sysTheme)) {
-          document.documentElement.classList.add('dark');
-          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#000000');
-        }
-      } catch (e) {}
-    })();
-  </script>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#F2F2F7">
+  <title>Plánování Směn</title>
 
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
 </head>
+
 <body>
 
   <div id="loader">
@@ -45,26 +37,38 @@
       </div>
 
       <div class="card login-card">
-        
         <div class="login-tabs-wrapper mb-4">
           <button id="tabBrigadeer" class="login-tab active">
-            <svg class="tab-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <svg class="tab-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
             <span>Brigádník</span>
           </button>
           <button id="tabAdmin" class="login-tab">
-            <svg class="tab-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            <svg class="tab-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 14a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"></path>
+              <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+              </path>
+            </svg>
             <span>Admin</span>
           </button>
         </div>
-        
+
         <div class="input-group">
           <select id="userSelect" class="styled-input">
-            <option value="" disabled selected>Vyber své jméno</option>
+            <option value="" disabled selected>Vyberte své jméno</option>
           </select>
         </div>
 
         <div class="input-group pin-group">
-          <input type="password" id="pinInput" class="styled-input text-center" placeholder="Váš PIN" inputmode="numeric" maxlength="6">
+          <input type="password" id="pinInput" class="styled-input text-center" placeholder="Váš PIN"
+            inputmode="numeric" maxlength="6">
         </div>
 
         <button id="loginBtn" class="btn btn-primary full-width mt-2">Vstoupit</button>
@@ -72,14 +76,18 @@
     </div>
 
     <div id="app-view" class="view-section hidden">
-      
       <div class="app-header anim d-1">
         <div class="user-info">
           <h2 id="headerUserName">Jméno</h2>
           <span id="headerUserRole" class="role-badge">Role</span>
         </div>
         <button id="logoutBtn" class="btn-icon-small">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
         </button>
       </div>
 
@@ -105,26 +113,26 @@
 
       <div id="admin-dashboard" class="dashboard-section hidden anim d-2">
         <div class="card mb-4">
-           <div class="card-header-line">
+          <div class="card-header-line">
             <span class="card-label">Přehled týmu</span>
             <div class="toggle-switch">
               <button id="adminViewMonthly" class="toggle-btn active">Měsíc</button>
               <button id="adminViewTotal" class="toggle-btn">Celkem</button>
             </div>
-           </div>
-           <div class="table-wrapper">
-             <table class="stats-table" id="adminStatsTable">
-               <thead>
-                 <tr>
-                   <th class="align-left">JMÉNO</th>
-                   <th>HODIN</th>
-                   <th>BILANCE</th>
-                   <th>AKCE</th>
-                 </tr>
-               </thead>
-               <tbody id="adminStatsBody"></tbody>
-             </table>
-           </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="stats-table" id="adminStatsTable">
+              <thead>
+                <tr>
+                  <th class="align-left">JMÉNO</th>
+                  <th>HODIN</th>
+                  <th>BILANCE</th>
+                  <th>AKCE</th>
+                </tr>
+              </thead>
+              <tbody id="adminStatsBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -134,22 +142,24 @@
           <h3 id="calendarMonthTitle">Leden 2024</h3>
           <button id="nextMonthBtn" class="nav-btn">›</button>
         </div>
-        
         <div class="calendar-weekdays">
-          <div>Po</div><div>Út</div><div>St</div><div>Čt</div><div>Pá</div><div>So</div><div>Ne</div>
+          <div>Po</div>
+          <div>Út</div>
+          <div>St</div>
+          <div>Čt</div>
+          <div>Pá</div>
+          <div>So</div>
+          <div>Ne</div>
         </div>
-        
         <div id="calendarGrid" class="calendar-grid"></div>
-
         <div class="calendar-legend mt-4">
           <div class="legend-item"><span class="dot confirmed"></span>Potvrzeno</div>
           <div class="legend-item"><span class="dot pending"></span>Zájem</div>
           <div class="legend-item"><span class="dot free"></span>Volno</div>
         </div>
       </div>
-
-    </div> 
-  </div> 
+    </div>
+  </div>
 
   <dialog id="shiftDialog">
     <div class="modal-content">
@@ -181,7 +191,6 @@
         <div class="kpi-label">K PROPLACENÍ</div>
         <div class="kpi-val" id="payModalPayable">0 h</div>
       </div>
-      
       <form id="payForm">
         <input type="number" id="payInputHours" placeholder="Počet hodin" step="0.1" class="styled-input mb-2">
         <div class="text-center text-muted text-sm mb-4">
@@ -196,6 +205,6 @@
   </dialog>
 
   <script src="js/app.js"></script>
-
 </body>
+
 </html>

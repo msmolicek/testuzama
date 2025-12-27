@@ -1,149 +1,7 @@
-/* SOUBOR: css/style.css (v4.0 - Universe Standard) */
-/* POPIS: Golden Edition Design System. Dark Mode, Apple Colors, Glassmorphism. */
+/* SOUBOR: css/components.css (v5.0 - UI Elements) */
+/* POPIS: Detailní styly pro Karty, Inputy, Kalendář, Modaly a Specifické prvky. */
 
-/* --- 1. VARIABLES (The DNA) --- */
-:root {
-  /* LIGHT MODE PALETTE (Default) */
-  --c-bg: #F2F2F7;
-  --c-card: #FFFFFF;
-  --c-text-main: #000000;
-  --c-text-muted: #8E8E93;
-  --c-border: #E5E5EA;
-  --c-input-bg: #F2F2F7;
-
-  /* BRAND COLORS (Apple Standard) */
-  --c-green: #34C759;
-  --c-green-hover: #2DA84E;
-  --c-red: #FF3B30;
-  --c-red-hover: #D73328;
-  --c-blue: #007AFF;
-  --c-gold: #FFCC00;
-
-  /* DIMENSIONS & SHADOWS */
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-pill: 50px;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
-
-  /* TRANSITIONS */
-  --trans-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* DARK MODE OVERRIDES (OLED Black) */
-html.dark {
-  --c-bg: #000000;
-  --c-card: #1C1C1E;
-  --c-text-main: #FFFFFF;
-  --c-text-muted: #98989D;
-  --c-border: #38383A;
-  --c-input-bg: #2C2C2E;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-/* --- 2. RESET & BASE --- */
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: var(--c-bg);
-  color: var(--c-text-main);
-  margin: 0;
-  padding: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  overflow-x: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* --- 3. UTILS --- */
-.hidden {
-  display: none !important;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-
-.mb-4 {
-  margin-bottom: 1rem;
-}
-
-.mt-2 {
-  margin-top: 0.5rem;
-}
-
-.mt-4 {
-  margin-top: 1rem;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-right {
-  text-align: right;
-}
-
-.text-muted {
-  color: var(--c-text-muted);
-}
-
-.text-primary {
-  color: var(--c-text-main);
-  font-weight: 700;
-}
-
-.text-accent {
-  color: var(--c-gold);
-  font-weight: 700;
-}
-
-.text-green {
-  color: var(--c-green);
-  font-weight: 700;
-}
-
-.full-width {
-  width: 100%;
-}
-
-/* --- 4. ANIMATIONS --- */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.anim {
-  animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  opacity: 0;
-}
-
-.d-1 {
-  animation-delay: 0.05s;
-}
-
-.d-2 {
-  animation-delay: 0.1s;
-}
-
-.d-3 {
-  animation-delay: 0.15s;
-}
-
-/* --- 5. COMPONENTS --- */
-
-/* LOADER */
+/* --- 1. LOADER & TOAST --- */
 #loader {
   position: fixed;
   inset: 0;
@@ -165,19 +23,6 @@ body {
   margin-bottom: 15px;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.loading-text {
-  font-weight: 600;
-  color: var(--c-text-muted);
-  font-size: 0.9rem;
-}
-
-/* TOAST (Floating Top Right) */
 #toast {
   position: fixed;
   top: 20px;
@@ -189,11 +34,10 @@ body {
   color: var(--c-text-main);
   padding: 16px 24px;
   border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-float);
   font-weight: 600;
   z-index: 10000;
   border-left: 4px solid var(--c-green);
-  /* Success stripe default */
   display: flex;
   align-items: center;
   gap: 12px;
@@ -207,39 +51,25 @@ body {
   pointer-events: auto;
 }
 
-html.dark #toast {
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  border: 1px solid var(--c-border);
-  border-left: 4px solid var(--c-green);
-}
-
-/* LAYOUT CONTAINER */
-.app-container {
-  max-width: 600px;
-  margin: 0 auto;
-  min-height: 100vh;
-  padding: 20px;
-  position: relative;
-}
-
-/* HEADER & BRAND */
+/* --- 2. HEADER & BRAND --- */
 .header-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 30px 0;
+  padding: 40px 0 30px 0;
 }
 
 .brand-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .brand-text {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 800;
   color: var(--c-text-main);
+  text-transform: uppercase;
   letter-spacing: -0.5px;
 }
 
@@ -248,9 +78,34 @@ html.dark #toast {
   height: 64px;
   border-radius: 50%;
   box-shadow: var(--shadow);
+  object-fit: cover;
 }
 
-/* CARDS */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-top: 10px;
+}
+
+.user-info h2 {
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.role-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--c-input-bg);
+  color: var(--c-text-muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- 3. CARDS & CONTAINERS --- */
 .card {
   background: var(--c-card);
   border-radius: var(--radius);
@@ -276,12 +131,12 @@ html.dark #toast {
   letter-spacing: 0.5px;
 }
 
-/* LOGIN TABS (Pills) */
+/* --- 4. LOGIN TABS (The Green Pill) --- */
 .login-tabs-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
+  gap: 4px;
   margin-bottom: 25px;
   background: var(--c-input-bg);
   padding: 4px;
@@ -294,10 +149,10 @@ html.dark #toast {
 .login-tab {
   background: transparent;
   border: none;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 500;
   color: var(--c-text-muted);
-  padding: 8px 20px;
+  padding: 10px 24px;
   border-radius: var(--radius-pill);
   cursor: pointer;
   display: flex;
@@ -310,27 +165,24 @@ html.dark #toast {
   transform: scale(0.96);
 }
 
-.login-tab.active {
-  background-color: var(--c-card);
-  color: var(--c-green);
-  font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-html.dark .login-tab.active {
-  background-color: #3A3A3C;
-  color: var(--c-green);
-}
-
 .tab-icon {
   width: 18px;
   height: 18px;
   stroke-width: 2.5px;
 }
 
-/* INPUTS & BUTTONS */
+/* ACTIVE STATE: Green Background, Black Text */
+.login-tab.active {
+  background-color: var(--c-green);
+  color: #000000;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* --- 5. INPUTS & BUTTONS --- */
 .input-group {
   margin-bottom: 16px;
+  position: relative;
 }
 
 .styled-input {
@@ -343,8 +195,6 @@ html.dark .login-tab.active {
   color: var(--c-text-main);
   outline: none;
   transition: var(--trans-fast);
-
-  /* Pro Apple Select */
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -353,6 +203,7 @@ html.dark .login-tab.active {
 .styled-input:focus {
   border-color: var(--c-green);
   background: var(--c-card);
+  box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.1);
 }
 
 .styled-input::placeholder {
@@ -360,11 +211,10 @@ html.dark .login-tab.active {
   opacity: 0.7;
 }
 
-/* Custom Arrow pro Select (Apple Style Chevron) */
+/* Apple Style Select Arrow */
 select.styled-input {
   cursor: pointer;
   padding-right: 40px;
-  /* Místo pro šipku */
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 16px center;
@@ -374,7 +224,7 @@ select.styled-input {
 .btn {
   border: none;
   padding: 0 24px;
-  height: 50px;
+  height: 52px;
   border-radius: 12px;
   font-weight: 700;
   font-size: 1rem;
@@ -383,6 +233,7 @@ select.styled-input {
   align-items: center;
   justify-content: center;
   transition: var(--trans-fast);
+  width: 100%;
 }
 
 .btn:active {
@@ -394,7 +245,6 @@ select.styled-input {
   color: var(--c-bg);
 }
 
-/* Inverted for Apple feel */
 .btn-secondary {
   background: var(--c-input-bg);
   color: var(--c-text-main);
@@ -418,6 +268,8 @@ select.styled-input {
   color: var(--c-text-muted);
   cursor: pointer;
   transition: var(--trans-fast);
+  width: auto;
+  height: auto;
 }
 
 .btn-icon-small:hover {
@@ -425,30 +277,7 @@ select.styled-input {
   color: var(--c-text-main);
 }
 
-/* DASHBOARD & KPI */
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-.user-info h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--c-text-main);
-}
-
-.role-badge {
-  font-size: 0.75rem;
-  font-weight: 700;
-  background: var(--c-input-bg);
-  color: var(--c-text-muted);
-  padding: 4px 10px;
-  border-radius: 6px;
-}
-
+/* --- 6. KPI DASHBOARD --- */
 .kpi-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -481,6 +310,7 @@ select.styled-input {
   color: var(--c-text-muted);
   margin-bottom: 6px;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .kpi-val {
@@ -499,10 +329,12 @@ select.styled-input {
   color: var(--c-text-muted);
 }
 
-/* ADMIN TABLE */
+/* --- 7. ADMIN TABLE --- */
 .table-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  margin: 0 -24px;
+  padding: 0 24px;
 }
 
 .stats-table {
@@ -521,7 +353,7 @@ select.styled-input {
 }
 
 .stats-table td {
-  padding: 14px 8px;
+  padding: 16px 8px;
   text-align: center;
   border-bottom: 1px solid var(--c-border);
   font-size: 0.95rem;
@@ -538,7 +370,7 @@ select.styled-input {
   text-align: left !important;
 }
 
-/* TOGGLE SWITCH */
+/* Toggle Switch (Měsíc/Celkem) */
 .toggle-switch {
   background: var(--c-input-bg);
   padding: 3px;
@@ -562,16 +394,23 @@ select.styled-input {
 .toggle-btn.active {
   background: var(--c-card);
   color: var(--c-text-main);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-/* CALENDAR */
+/* --- 8. CALENDAR SYSTEM --- */
 .calendar-wrapper {
   background: var(--c-card);
   border-radius: var(--radius);
   border: 1px solid var(--c-border);
   box-shadow: var(--shadow);
   padding: 20px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
 .calendar-header h3 {
@@ -599,6 +438,7 @@ select.styled-input {
 
 .nav-btn:active {
   transform: scale(0.9);
+  background: var(--c-border);
 }
 
 .calendar-weekdays {
@@ -642,6 +482,7 @@ select.styled-input {
   cursor: default;
 }
 
+/* Calendar States */
 .cal-day.today {
   border-color: var(--c-text-main);
   background: var(--c-bg);
@@ -652,28 +493,6 @@ select.styled-input {
   opacity: 0.4;
 }
 
-.day-num {
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 2px;
-  color: var(--c-text-main);
-}
-
-.day-status {
-  width: 100%;
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-/* Calendar Statuses */
 .s-confirmed {
   background-color: rgba(52, 199, 89, 0.15);
   border-color: rgba(52, 199, 89, 0.4);
@@ -698,6 +517,27 @@ select.styled-input {
 
 .s-pending .status-dot {
   background: var(--c-gold);
+}
+
+.day-num {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+  color: var(--c-text-main);
+}
+
+.day-status {
+  width: 100%;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
 }
 
 .status-badge-mini {
@@ -725,6 +565,7 @@ select.styled-input {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  display: inline-block;
 }
 
 .dot.confirmed {
@@ -739,7 +580,7 @@ select.styled-input {
   border: 1px solid var(--c-border);
 }
 
-/* MODALS (Glassmorphism) */
+/* --- 9. MODALS (Glassmorphism) --- */
 dialog {
   border: none;
   padding: 0;
@@ -775,16 +616,6 @@ dialog::backdrop {
   box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-
-  to {
-    transform: translateY(0);
-  }
 }
 
 .modal-title {
@@ -840,6 +671,7 @@ dialog::backdrop {
   color: var(--c-text-main);
 }
 
+/* --- 10. RESPONSIVE --- */
 @media (min-width: 768px) {
   dialog {
     align-items: center;
