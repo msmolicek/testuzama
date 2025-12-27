@@ -67,7 +67,7 @@
         </div>
 
         <div class="input-group pin-group">
-          <input type="password" id="pinInput" class="styled-input text-center" placeholder="Váš PIN"
+          <input type="password" id="pinInput" class="styled-input text-center" placeholder="Zadej PIN"
             inputmode="numeric" maxlength="6">
         </div>
 
@@ -76,8 +76,9 @@
     </div>
 
     <div id="app-view" class="view-section hidden">
+
       <div class="app-header anim d-1">
-        <div class="user-info">
+        <div class="user-text-col">
           <h2 id="headerUserName">Jméno</h2>
           <span id="headerUserRole" class="role-badge">Role</span>
         </div>
@@ -103,10 +104,15 @@
             <div class="kpi-val green" id="b-worked-hours">0 h</div>
             <div class="kpi-explain" id="b-worked-shifts">0 směn</div>
           </div>
-          <div class="kpi-card full-width-col">
-            <div class="kpi-label">K VÝPLATĚ (CELKEM)</div>
-            <div class="kpi-val text-primary" id="b-to-pay">0 Kč</div>
-            <div class="kpi-explain">Výdělek minus zálohy</div>
+          <div class="kpi-card">
+            <div class="kpi-label" id="b-month-earn-label">VÝDĚLEK</div>
+            <div class="kpi-val" id="b-month-earn">0 Kč</div>
+            <div class="kpi-explain text-muted">Tento měsíc</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">K VÝPLATĚ</div>
+            <div class="kpi-val text-green" id="b-balance">0 Kč</div>
+            <div class="kpi-explain" id="b-paid">Vyplaceno: 0 Kč</div>
           </div>
         </div>
       </div>
@@ -158,6 +164,7 @@
           <div class="legend-item"><span class="dot free"></span>Volno</div>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -205,6 +212,7 @@
   </dialog>
 
   <script src="js/app.js"></script>
+
 </body>
 
 </html>
