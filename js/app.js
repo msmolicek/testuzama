@@ -1,5 +1,5 @@
-// SOUBOR: js/app.js (v5.3 - Final Polish)
-// POPIS: Formátování data (01.07.2025), Odpracováno stav, Pilulky v modalu, KPI fixy.
+// SOUBOR: js/app.js (v5.8 - Final Visual & Logic Polish)
+// POPIS: Sjednocení barev (zelená tlačítka, šedé pilulky), tučné labely, Pay Modal logika.
 
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxY0pfNreBWSFDAve0XUscwvYC7xiNcqowIPviOllbppkF0WGvJ2t-GHdGGfcJV1BIwfg/exec"; 
 
@@ -39,7 +39,13 @@ const DOM = {
   
   shiftDialog: document.getElementById('shiftDialog'),
   confirmDialog: document.getElementById('confirmDialog'),
-  payDialog: document.getElementById('payDialog')
+  payDialog: document.getElementById('payDialog'),
+
+  payModalPayable: document.getElementById('payModalPayable'),
+  payModalTotalDebt: document.getElementById('payModalTotalDebt'),
+  payInputHours: document.getElementById('payInputHours'),
+  payCalcAmount: document.getElementById('payCalcAmount'),
+  payRemaining: document.getElementById('payRemaining')
 };
 
 // =================================================================
@@ -142,21 +148,26 @@ async function handleLogin() {
   showLoader(); 
 
   try {
-    let response;
+    let verifyResponse;
     if (isAdminLogin) {
-      response = await serverCall('verifyAdmin', [pin]);
+      verifyResponse = await serverCall('verifyAdmin', [pin]);
     } else {
-      response = await serverCall('verifyUser', [name, pin]);
+      verifyResponse = await serverCall('verifyUser', [name, pin]);
     }
-    STATE.currentUser = response.user;
+    STATE.currentUser = verifyResponse.user;
 
-    const appData = await serverCall('getInitialAppData');
+    const dataPromises = [serverCall('getInitialAppData')]; 
+    if (STATE.currentUser.role !== 'Admin') {
+      dataPromises.push(serverCall('getBrigadeerInitialData', [STATE.currentUser.name]));
+    }
+
+    const results = await Promise.all(dataPromises);
+    const appData = results[0];
     STATE.cache.allShifts = appData.shifts;
     STATE.cache.users = appData.users;
 
-    if (STATE.currentUser.role !== 'Admin') {
-      const history = await serverCall('getBrigadeerInitialData', [STATE.currentUser.name]);
-      STATE.cache.history = history;
+    if (STATE.currentUser.role !== 'Admin' && results[1]) {
+      STATE.cache.history = results[1];
     }
 
     DOM.loginView.classList.add('hidden');
@@ -164,6 +175,8 @@ async function handleLogin() {
     DOM.headerName.textContent = STATE.currentUser.name;
     DOM.headerRole.textContent = STATE.currentUser.role;
     DOM.pinInput.value = '';
+
+    STATE.viewDate = new Date();
 
     if (STATE.currentUser.role === 'Admin') {
       DOM.dashAdmin.classList.remove('hidden');
@@ -174,7 +187,6 @@ async function handleLogin() {
       renderBrigadeerStats();
     }
 
-    STATE.viewDate = new Date();
     renderCalendarLocal();
 
   } catch (err) {
@@ -269,6 +281,15 @@ function renderCalendar(year, month, shiftsData) {
 // 5. ADMIN & SERVER UPDATES
 // =================================================================
 
+function setAdminView(mode, btn) {
+  STATE.adminViewMode = mode;
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const year = STATE.viewDate.getFullYear();
+  const month = STATE.viewDate.getMonth() + 1;
+  updateAdminTableAsync(year, month);
+}
+
 async function updateAdminTableAsync(year, month) {
   try {
     const stats = await serverCall('getAdminOverviewData', [STATE.adminViewMode, year, month]);
@@ -282,13 +303,27 @@ async function refreshAllData() {
   renderCalendarLocal();
 }
 
+function renderAdminTable(data) {
+  const tbody = document.getElementById('adminStatsBody'); tbody.innerHTML = '';
+  if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center py-4">Žádná data</td></tr>'; return; }
+  
+  data.forEach(u => {
+    const tr = document.createElement('tr');
+    let actionBtn = '-';
+    if (parseFloat(u.payableHours) > 0) {
+       actionBtn = `<button class="btn btn-success btn-table" onclick="openPayModal('${u.name}', ${u.payableHours}, ${u.rate}, ${u.toPay})">Vyplatit</button>`;
+    }
+    tr.innerHTML = `<td>${u.name}</td><td>${u.totalHours}</td><td class="${u.toPay > 0 ? 'text-accent' : 'text-muted'}">${formatCurrency(u.toPay)} Kč</td><td>${actionBtn}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
 // =================================================================
-// 6. MODALS (UPDATED LOGIC)
+// 6. MODALS
 // =================================================================
 
 function openDayModal(date, shifts, confirmedShift) {
   const dateStr = date.toISOString().split('T')[0];
-  // NEW DATE FORMAT: dd.mm.yyyy (01.07.2025)
   const czDate = date.getDate().toString().padStart(2,'0') + '.' + 
                  (date.getMonth() + 1).toString().padStart(2,'0') + '.' + 
                  date.getFullYear();
@@ -305,7 +340,6 @@ function openDayModal(date, shifts, confirmedShift) {
 
   if (confirmedShift) {
     const isMe = confirmedShift.name === STATE.currentUser.name;
-    // LOGIKA PRO ODPRACOVÁNO vs OBSAZENO
     const statusLabel = isPast ? "ODPRACOVÁNO" : "OBSAZENO";
     
     let timeHtml = `
@@ -320,7 +354,9 @@ function openDayModal(date, shifts, confirmedShift) {
        const hours = calcHours(confirmedShift.timeFrom, confirmedShift.timeTo);
        const rate = isAdmin ? (getCurrentUserRate(confirmedShift.name) || 0) : STATE.currentUser.rate;
        const earn = Math.round(hours * rate);
-       timeHtml += `<div class="text-center mb-4"><span class="text-muted text-sm">Odměna za směnu:</span><br><strong class="text-green" style="font-size: 1.2rem">${earn} Kč</strong></div>`;
+       
+       // UPDATE: Nová třída .text-label-gray pro label (Odměna za směnu)
+       timeHtml += `<div class="text-center mb-4"><div class="text-label-gray mb-1">Odměna za směnu:</div><strong class="text-green" style="font-size: 1.2rem">${formatCurrency(earn)} Kč</strong></div>`;
     }
 
     if (isAdmin) {
@@ -332,7 +368,6 @@ function openDayModal(date, shifts, confirmedShift) {
       footer.innerHTML = `<button class="btn btn-danger" onclick="actionDeleteShift('${dateStr}')">Zrušit</button><button class="btn btn-success" onclick="actionUpdateShift('${dateStr}', '${confirmedShift.name}')">Uložit</button>`;
     } else {
       body.innerHTML = timeHtml;
-      // Pokud jsem to já a není to minulost, zobraz info
       if (isMe && !isPast) footer.innerHTML = `<div class="text-center text-muted w-100">Jste přihlášen.</div>`;
     }
 
@@ -346,33 +381,33 @@ function openDayModal(date, shifts, confirmedShift) {
       body.innerHTML = html;
       footer.innerHTML = `<button class="btn btn-danger" onclick="actionDeleteShift('${dateStr}')">Zrušit vše</button><button class="btn btn-success" onclick="actionConfirmShift('${dateStr}')">Potvrdit</button>`;
     } else {
-      // BRIGÁDNÍK VIEW - ŽLUTÁ
       const imApplied = shifts.some(s => s.name === STATE.currentUser.name);
       let list = `<ul class="mb-4" style="padding-left:20px; color:var(--c-text-muted)">`;
       shifts.forEach(s => list += `<li>${s.name}</li>`);
       list += `</ul>`;
       
+      // UPDATE: Pilulka je nyní .gray místo .yellow
       let statusInfo = imApplied 
-        ? `<div class="status-pill yellow">Projevil(a) jsi zájem o směnu</div>` 
+        ? `<div class="status-pill gray">Projevil(a) jsi zájem o směnu</div>` 
         : '';
 
       body.innerHTML = `<h4 class="text-center mb-2">Zájemci o směnu:</h4>${list}${statusInfo}`;
       
       if (imApplied) {
-         // Button centering handled by CSS .modal-footer flex
          footer.innerHTML = `<button class="btn btn-danger full-width" onclick="actionCancelApp('${dateStr}')">Zrušit zájem</button>`;
       } else {
          footer.innerHTML = `<button class="btn btn-success full-width" onclick="actionApply('${dateStr}')">Mám zájem</button>`;
       }
     }
   } else {
-    // EMPTY STATE - ŠEDÁ
+    // EMPTY DAY (Volno)
     if (isAdmin) {
       body.innerHTML = `<h4 class="text-center mb-4">Vytvořit směnu</h4><div class="mb-2"><label class="text-muted text-sm">Brigádník:</label><select id="mUserSelect" class="styled-input">${STATE.cache.users.map(u => `<option>${u}</option>`).join('')}</select></div><div class="mb-2"><label class="text-muted text-sm">Čas:</label><div class="input-group" style="display:flex; gap:5px"><input type="time" id="mTimeFrom" value="13:00" class="styled-input"><input type="time" id="mTimeTo" value="18:00" class="styled-input"></div></div>`;
       footer.innerHTML = `<button class="btn btn-success full-width" onclick="actionCreateShift('${dateStr}')">Vytvořit</button>`;
     } else {
       body.innerHTML = `<div class="status-pill gray">Chceš se přihlásit na tuto směnu?</div>`;
-      footer.innerHTML = `<button class="btn btn-primary full-width" onclick="actionApply('${dateStr}')">Mám zájem</button>`;
+      // UPDATE: Tlačítko je nyní ZELENÉ (btn-success)
+      footer.innerHTML = `<button class="btn btn-success full-width" onclick="actionApply('${dateStr}')">Mám zájem</button>`;
     }
   }
   DOM.shiftDialog.showModal();
@@ -461,18 +496,15 @@ function renderBrigadeerStats() {
   document.getElementById('b-planned-hours').textContent = plannedH.toFixed(1) + ' h';
   document.getElementById('b-planned-shifts').textContent = plannedC + ' směn';
   
-  // UPDATE 1: Karta Výdělek (Label K VÝPLATĚ, dole datum)
   document.getElementById('b-month-earn-label').textContent = `K VÝPLATĚ`;
-  document.getElementById('b-month-earn').textContent = Math.round(monthEarned) + ' Kč';
-  // Změníme popisek "Tento měsíc" na "mm/yyyy" přes ID (pokud v HTML chybí ID, najdeme class)
+  document.getElementById('b-month-earn').textContent = formatCurrency(Math.round(monthEarned)) + ' Kč';
   const explainEl = document.getElementById('b-month-earn').nextElementSibling;
   if(explainEl) explainEl.textContent = `${mm}/${viewY}`;
 
-  // UPDATE 2: Karta Bilance (Label (CELKEM))
   document.getElementById('b-balance').previousElementSibling.textContent = "CELKEM (VŠE)";
   const balance = Math.max(0, totalEarnedHistory - totalPaid);
-  document.getElementById('b-balance').textContent = Math.round(balance) + ' Kč';
-  document.getElementById('b-paid').textContent = `Vyplaceno: ${Math.round(totalPaid)} Kč`;
+  document.getElementById('b-balance').textContent = formatCurrency(Math.round(balance)) + ' Kč';
+  document.getElementById('b-paid').textContent = `Vyplaceno: ${formatCurrency(Math.round(totalPaid))} Kč`;
   
   let workedH_Month = 0;
   h.allShifts.forEach(s => {
@@ -486,33 +518,39 @@ function renderBrigadeerStats() {
   document.getElementById('b-worked-hours').textContent = workedH_Month.toFixed(1) + ' h';
 }
 
-function renderAdminTable(data) {
-  const tbody = document.getElementById('adminStatsBody'); tbody.innerHTML = '';
-  if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center py-4">Žádná data</td></tr>'; return; }
-  data.forEach(u => {
-    const tr = document.createElement('tr');
-    let actionBtn = '-';
-    if (parseFloat(u.payableHours) > 0) {
-       actionBtn = `<button class="btn btn-success" style="padding:6px 12px; font-size:0.8rem" onclick="openPayModal('${u.name}', ${u.payableHours}, ${u.rate})">Vyplatit</button>`;
-    }
-    tr.innerHTML = `<td>${u.name}</td><td>${u.totalHours}</td><td class="${u.toPay > 0 ? 'text-accent' : 'text-muted'}">${u.toPay} Kč</td><td>${actionBtn}</td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-window.openPayModal = (name, hours, rate) => {
+window.openPayModal = (name, hours, rate, totalDebt) => {
   const modal = DOM.payDialog;
-  document.getElementById('payModalPayable').textContent = hours + ' h';
-  const inp = document.getElementById('payInputHours'); inp.value = hours;
-  const calcEl = document.getElementById('payCalcAmount');
-  const updateCalc = () => { calcEl.textContent = Math.round(inp.value * rate) + ' Kč'; };
-  inp.oninput = updateCalc; updateCalc();
+  
+  DOM.payModalPayable.textContent = hours + ' h';
+  DOM.payModalTotalDebt.textContent = formatCurrency(totalDebt) + ' Kč'; 
+  
+  const inp = DOM.payInputHours; 
+  inp.value = hours;
+
+  const updateCalc = () => {
+     const h = parseFloat(inp.value) || 0;
+     const moneyToPay = Math.round(h * rate);
+     const remaining = totalDebt - moneyToPay;
+     
+     DOM.payCalcAmount.textContent = formatCurrency(moneyToPay) + ' Kč';
+     DOM.payRemaining.textContent = formatCurrency(remaining) + ' Kč';
+  };
+  
+  inp.oninput = updateCalc; 
+  updateCalc();
+
   document.getElementById('payForm').onsubmit = (e) => {
-    e.preventDefault(); if(inp.value <= 0) return showToast("Zadejte hodiny", true);
+    e.preventDefault(); 
+    if(inp.value <= 0) return showToast("Zadejte hodiny", true);
     runAction('logHoursPayment', [name, inp.value]);
   };
+  
   modal.showModal();
 };
+
+function formatCurrency(num) {
+  return String(num).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
 
 function calcHours(t1, t2) {
   const d1 = new Date("2000-01-01T" + t1); const d2 = new Date("2000-01-01T" + t2);

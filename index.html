@@ -62,7 +62,7 @@
 
         <div class="input-group">
           <select id="userSelect" class="styled-input">
-            <option value="" disabled selected>Vyberte své jméno</option>
+            <option value="" disabled selected>Vyber své jméno</option>
           </select>
         </div>
 
@@ -145,7 +145,7 @@
       <div class="calendar-wrapper anim d-3">
         <div class="calendar-header">
           <button id="prevMonthBtn" class="nav-btn">‹</button>
-          <h3 id="calendarMonthTitle">Leden 2024</h3>
+          <h3 id="calendarMonthTitle">...</h3>
           <button id="nextMonthBtn" class="nav-btn">›</button>
         </div>
         <div class="calendar-weekdays">
@@ -170,18 +170,19 @@
 
   <dialog id="shiftDialog">
     <div class="modal-content">
+      <button class="btn-close-abs" onclick="closeModal('shiftDialog')">✕</button>
       <div class="modal-title">
         <div class="modal-icon-lg" id="shiftModalIcon">📅</div>
         <span id="shiftModalDate">...</span>
       </div>
       <div id="shiftModalBody" class="modal-body-content"></div>
       <div class="modal-footer" id="shiftModalFooter"></div>
-      <button class="btn-close-abs" onclick="closeModal('shiftDialog')">✕</button>
     </div>
   </dialog>
 
   <dialog id="confirmDialog">
     <div class="modal-content text-center">
+      <button class="btn-close-abs" onclick="closeModal('confirmDialog')">✕</button>
       <div class="modal-title">Potvrzení</div>
       <p id="confirmMessage" class="mb-4 text-muted">Opravdu?</p>
       <div class="modal-footer">
@@ -193,18 +194,38 @@
 
   <dialog id="payDialog">
     <div class="modal-content">
+      <button class="btn-close-abs" onclick="closeModal('payDialog')">✕</button>
+      
       <div class="modal-title">Výplata</div>
-      <div class="kpi-card mb-2 bg-light">
-        <div class="kpi-label">K PROPLACENÍ</div>
-        <div class="kpi-val" id="payModalPayable">0 h</div>
-      </div>
-      <form id="payForm">
-        <input type="number" id="payInputHours" placeholder="Počet hodin" step="0.1" class="styled-input mb-2">
-        <div class="text-center text-muted text-sm mb-4">
-          Celkem: <strong id="payCalcAmount" class="text-primary">0 Kč</strong>
+      
+      <div class="pay-stats-grid">
+        <div class="kpi-card">
+           <div class="kpi-label">K PROPLACENÍ</div>
+           <div class="kpi-val" id="payModalPayable">0 h</div>
         </div>
+        <div class="kpi-card">
+           <div class="kpi-label">K PROPLACENÍ</div> <div class="kpi-val" id="payModalTotalDebt">0 Kč</div>
+        </div>
+      </div>
+
+      <form id="payForm">
+        <div class="mb-4">
+           <div class="text-center mb-2 text-label-gray">Zadej počet hodin</div>
+           <input type="number" id="payInputHours" placeholder="0" step="0.1" 
+                  class="styled-input text-center" 
+                  style="font-size:1.5rem;">
+        </div>
+
+        <div class="text-center mb-4">
+          <div class="text-muted text-sm">Vyplácená částka:</div>
+          <div class="text-green font-bold" style="font-size:1.2rem" id="payCalcAmount">0 Kč</div>
+          
+          <div class="text-muted text-sm mt-2" style="border-top:1px solid var(--c-border); padding-top:8px; margin-top:8px">
+             Zbývá doplatit: <strong id="payRemaining" class="text-primary">0 Kč</strong>
+          </div>
+        </div>
+
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" onclick="closeModal('payDialog')">Zrušit</button>
           <button type="submit" class="btn btn-success">Vyplatit</button>
         </div>
       </form>
@@ -214,5 +235,4 @@
   <script src="js/app.js"></script>
 
 </body>
-
 </html>
