@@ -1,5 +1,5 @@
-// SOUBOR: js/app.js (v5.35 - FINAL FULL VERSION)
-// POPIS: Kompletní, nezkrácený kód aplikace se všemi funkcemi a logikou.
+// SOUBOR: js/app.js (v5.45 - FINAL SYNC)
+// POPIS: Kompletní frontend. Jméno je klikatelná pilulka.
 
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxY0pfNreBWSFDAve0XUscwvYC7xiNcqowIPviOllbppkF0WGvJ2t-GHdGGfcJV1BIwfg/exec"; 
 
@@ -26,54 +26,74 @@ const STATE = {
 };
 
 // --- DOM ELEMENTS ---
-const DOM = {
-  loader: document.getElementById('loader'),
-  toast: document.getElementById('toast'),
-  toastIcon: document.getElementById('toast-icon'),
-  toastMsg: document.getElementById('toast-msg'),
-  loginView: document.getElementById('login-view'),
-  appView: document.getElementById('app-view'),
-  pinInput: document.getElementById('pinInput'),
-  userSelect: document.getElementById('userSelect'),
-  tabBrigadeer: document.getElementById('tabBrigadeer'),
-  tabAdmin: document.getElementById('tabAdmin'),
-  headerName: document.getElementById('headerUserName'),
-  headerRole: document.getElementById('headerUserRole'),
-  dashBrigadeer: document.getElementById('brigadeer-dashboard'),
-  dashAdmin: document.getElementById('admin-dashboard'),
-  calGrid: document.getElementById('calendarGrid'),
-  calTitle: document.getElementById('calendarMonthTitle'),
-  shiftDialog: document.getElementById('shiftDialog'),
-  confirmDialog: document.getElementById('confirmDialog'),
-  // Payment Modal Elements
-  payDialog: document.getElementById('payDialog'),
-  payModalPayable: document.getElementById('payModalPayable'),
-  payModalTotalDebt: document.getElementById('payModalTotalDebt'),
-  payInputHours: document.getElementById('payInputHours'),
-  payCalcAmount: document.getElementById('payCalcAmount'),
-  payRemaining: document.getElementById('payRemaining'),
-  payForm: document.getElementById('payForm')
-};
+let DOM = {};
 
 // --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
   if (!GAS_API_URL) return alert("CHYBA: Není vyplněna GAS_API_URL!");
+  injectHistoryModal(); 
+  initDOM(); 
   initApp();
 });
 
+function injectHistoryModal() {
+  if (document.getElementById('historyDialog')) return;
+  const html = `
+  <dialog id="historyDialog">
+    <div class="modal-content">
+      <button class="btn-close-abs" onclick="closeModal('historyDialog')">✕</button>
+      <div class="modal-title" style="margin-bottom:10px">
+        <span id="histModalTitle">Historie</span>
+        <span id="histModalSubtitle" class="text-muted" style="font-size:0.8rem; font-weight:500">...</span>
+      </div>
+      <div id="histModalBody" class="history-list-wrapper"></div>
+    </div>
+  </dialog>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function initDOM() {
+  DOM = {
+    loader: document.getElementById('loader'),
+    toast: document.getElementById('toast'),
+    toastIcon: document.getElementById('toast-icon'),
+    toastMsg: document.getElementById('toast-msg'),
+    loginView: document.getElementById('login-view'),
+    appView: document.getElementById('app-view'),
+    pinInput: document.getElementById('pinInput'),
+    userSelect: document.getElementById('userSelect'),
+    tabBrigadeer: document.getElementById('tabBrigadeer'),
+    tabAdmin: document.getElementById('tabAdmin'),
+    headerName: document.getElementById('headerUserName'),
+    headerRole: document.getElementById('headerUserRole'),
+    dashBrigadeer: document.getElementById('brigadeer-dashboard'),
+    dashAdmin: document.getElementById('admin-dashboard'),
+    calGrid: document.getElementById('calendarGrid'),
+    calTitle: document.getElementById('calendarMonthTitle'),
+    shiftDialog: document.getElementById('shiftDialog'),
+    confirmDialog: document.getElementById('confirmDialog'),
+    payDialog: document.getElementById('payDialog'),
+    payModalPayable: document.getElementById('payModalPayable'),
+    payModalTotalDebt: document.getElementById('payModalTotalDebt'),
+    payInputHours: document.getElementById('payInputHours'),
+    payCalcAmount: document.getElementById('payCalcAmount'),
+    payRemaining: document.getElementById('payRemaining'),
+    payForm: document.getElementById('payForm'),
+    historyDialog: document.getElementById('historyDialog'),
+    histModalBody: document.getElementById('histModalBody'),
+    histModalTitle: document.getElementById('histModalTitle'),
+    histModalSubtitle: document.getElementById('histModalSubtitle')
+  };
+}
+
 function initApp() {
-  // Načtení seznamu uživatelů pro Login
   serverCall('getUserList').then(res => {
     STATE.cache.users = res.users.map(u => u.name);
     res.users.forEach(u => STATE.cache.userRates[u.name] = u.rate);
-    
-    // Naplnění selectu
     DOM.userSelect.innerHTML += STATE.cache.users.map(u => `<option value="${u}">${u}</option>`).join('');
-    
     hideLoader();
   }).catch(err => showToast('Chyba spojení: ' + err.message, 'error'));
 
-  // Event Listeners
   document.getElementById('loginBtn').addEventListener('click', handleLogin);
   DOM.pinInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') handleLogin(); });
   document.getElementById('logoutBtn').addEventListener('click', handleLogout);
@@ -92,7 +112,6 @@ function initApp() {
 // --- LOGIN LOGIC ---
 function switchLoginMode(mode) {
   DOM.pinInput.value = '';
-  // Reset třídy is-admin
   document.body.classList.remove('is-admin');
   
   const isAdm = mode === 'admin';
@@ -112,7 +131,6 @@ async function handleLogin() {
 
   showLoader();
   try {
-    // 1. Verifikace
     const vRes = await serverCall(isAdm ? 'verifyAdmin' : 'verifyUser', isAdm ? [pin] : [name, pin]);
     
     if(!vRes.success) {
@@ -122,25 +140,21 @@ async function handleLogin() {
 
     STATE.currentUser = vRes.user;
 
-    // Nastavení třídy pro Admina (kvůli CSS override v kalendáři)
     if (isAdm) {
         document.body.classList.add('is-admin');
     } else {
         document.body.classList.remove('is-admin');
     }
 
-    // 2. Načtení dat (Paralelně)
     const promises = [serverCall('getInitialAppData')];
     if (!isAdm) promises.push(serverCall('getBrigadeerInitialData', [STATE.currentUser.name]));
 
     const [appData, histData] = await Promise.all(promises);
     
-    // Uložení do cache
     STATE.cache.allShifts = appData.shifts;
     if (appData.users) appData.users.forEach(u => STATE.cache.userRates[u.name] = u.rate);
     if (histData) STATE.cache.history = histData;
 
-    // 3. Zobrazení aplikace
     DOM.loginView.classList.add('hidden');
     DOM.appView.classList.remove('hidden');
     DOM.headerName.textContent = STATE.currentUser.name;
@@ -151,7 +165,6 @@ async function handleLogin() {
     
     STATE.viewDate = new Date();
     
-    // První vykreslení
     if (!isAdm) renderBrigadeerStats();
     renderCalendarLocal();
 
@@ -181,30 +194,26 @@ function renderCalendarLocal() {
   const y = STATE.viewDate.getFullYear();
   const m = STATE.viewDate.getMonth() + 1;
   
-  // Filtrujeme směny pro aktuální měsíc
   const shifts = STATE.cache.allShifts.filter(s => s.year === y && s.month === m);
   
   DOM.calTitle.textContent = new Date(y, m - 1).toLocaleString('cs-CZ', { month: 'long', year: 'numeric' });
   DOM.calGrid.innerHTML = '';
   
   const daysInMonth = new Date(y, m, 0).getDate();
-  const offset = (new Date(y, m - 1, 1).getDay() || 7) - 1; // 1=Po, 0=Ne -> korekce na Po=0
+  const offset = (new Date(y, m - 1, 1).getDay() || 7) - 1; 
   const today = new Date(); 
   today.setHours(0,0,0,0);
 
-  // Prázdná políčka na začátku
   for (let i = 0; i < offset; i++) {
       const empty = document.createElement('div');
       empty.className = 'cal-day empty';
       DOM.calGrid.appendChild(empty);
   }
 
-  // Dny v měsíci
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const dayShifts = shifts.filter(s => s.date === dateStr);
     
-    // Základní stav dne
     let confirmed = dayShifts.find(s => s.status === 'Potvrzeno');
     let hasInterest = dayShifts.length > 0;
     
@@ -212,20 +221,15 @@ function renderCalendarLocal() {
     const isPast = dayDate < today;
     const isBrigadeer = STATE.currentUser.role !== 'Admin';
 
-    // LOGIKA PRO BRIGÁDNÍKA V MINULOSTI:
-    // Vidí jen SVÉ potvrzené směny. Cizí nevidí. Zájmy nevidí vůbec.
     if (isBrigadeer && isPast) {
         if (confirmed && confirmed.name !== STATE.currentUser.name) {
-            confirmed = null; // Cizí potvrzená směna zmizí (bude šedá)
+            confirmed = null; 
         }
-        // Kontrola, jestli mám zájem já (pro případ, že by se zobrazovaly zájmy v minulosti, ale ty chceme skrýt taky, pokud to není moje potvrzená)
-        // Dle zadání: "neuvidí ani zájmy o směnu jiných brigádníků" -> takže pokud není confirmed moje, je to prázdné.
         if (!confirmed) {
             hasInterest = false;
         }
     }
 
-    // Vytvoření elementu
     const el = document.createElement('div');
     el.className = 'cal-day anim';
     el.style.animationDelay = `${d * 0.005}s`;
@@ -250,7 +254,6 @@ function renderCalendarLocal() {
     DOM.calGrid.appendChild(el);
   }
   
-  // Aktualizace statistik nebo tabulky
   if (STATE.currentUser.role === 'Admin') {
       updateAdminTableAsync(y, m);
   } else {
@@ -263,7 +266,6 @@ function setAdminView(mode, btn) {
   STATE.adminViewMode = mode;
   document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  // Překreslíme kalendář (což spustí i update tabulky)
   renderCalendarLocal();
 }
 
@@ -271,32 +273,42 @@ async function updateAdminTableAsync(y, m) {
   const tbody = document.getElementById('adminStatsBody'); 
   const headerRow = document.querySelector('#adminStatsTable thead tr');
   
-  // 1. Nastavení hlavičky (3 nebo 4 sloupce)
   if (STATE.adminViewMode === 'monthly') {
       headerRow.innerHTML = `<th class="align-left">JMÉNO</th><th>HODIN</th><th>BILANCE</th>`;
   } else {
       headerRow.innerHTML = `<th class="align-left">JMÉNO</th><th>HODIN</th><th>BILANCE</th><th>AKCE</th>`;
   }
 
-  // 2. Zobrazení loading spinneru
   const colSpan = STATE.adminViewMode === 'monthly' ? 3 : 4;
   tbody.innerHTML = `<tr><td colspan="${colSpan}"><div class="spinner-small-center"></div></td></tr>`;
 
   try {
-    // 3. Načtení dat ze serveru
     const stats = await serverCall('getAdminOverviewData', [STATE.adminViewMode, y, m]);
-    tbody.innerHTML = ''; // Vyčistíme spinner
+    tbody.innerHTML = ''; 
 
     if (!stats.dashboardData.length) { 
         tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-muted text-center py-4">Žádná data</td></tr>`; 
         return; 
     }
     
-    // 4. Vykreslení řádků
     stats.dashboardData.forEach(u => {
-      let html = `<tr><td>${u.name}</td><td>${u.totalHours}</td><td class="${u.toPay>0?'text-accent':'text-muted'}">${formatCurrency(u.toPay)} Kč</td>`;
+      const displayedHours = STATE.adminViewMode === 'total' ? u.payableHours : u.totalHours;
+      const hasWork = parseFloat(displayedHours) > 0;
       
-      // Tlačítko Vyplatit pouze v celkovém přehledu a pokud je co platit
+      const rowClass = hasWork ? 'row-active' : '';
+      const pillClass = hasWork ? 'green' : 'gray';
+
+      const nameCell = `
+        <span class="name-pill ${pillClass}" onclick="openHistoryModal('${u.name}')">
+          ${u.name}
+        </span>
+      `;
+
+      let html = `<tr class="${rowClass}">
+        <td class="align-left">${nameCell}</td>
+        <td>${displayedHours}</td>
+        <td class="${u.toPay>0 ? 'text-accent' : (hasWork?'':'text-muted')}">${formatCurrency(u.toPay)} Kč</td>`;
+      
       if (STATE.adminViewMode === 'total') {
           const btn = parseFloat(u.payableHours) > 0 
             ? `<button class="btn btn-success btn-table" onclick="openPayModal('${u.name}', ${u.payableHours}, ${u.rate}, ${u.toPay})">Vyplatit</button>` 
@@ -313,6 +325,48 @@ async function updateAdminTableAsync(y, m) {
   }
 }
 
+// --- HISTORY MODAL ---
+async function openHistoryModal(userName) {
+  const y = STATE.viewDate.getFullYear();
+  const m = STATE.viewDate.getMonth() + 1;
+  const modeLabel = STATE.adminViewMode === 'total' ? `Rok ${y}` : `${m}/${y}`;
+  
+  DOM.histModalTitle.textContent = userName;
+  DOM.histModalSubtitle.textContent = modeLabel;
+  DOM.histModalBody.innerHTML = '<div class="spinner-small-center"></div>';
+  
+  DOM.historyDialog.showModal();
+  
+  try {
+    const res = await serverCall('getAdminUserHistory', [userName, STATE.adminViewMode, y, m]);
+    DOM.histModalBody.innerHTML = '';
+
+    if (!res.history || res.history.length === 0) {
+      DOM.histModalBody.innerHTML = '<div class="text-muted text-center py-4">Žádná historie plateb</div>';
+      return;
+    }
+
+    let html = '<div class="history-list">';
+    res.history.forEach(item => {
+      html += `
+        <div class="history-item">
+           <div class="h-row-top">
+             <span class="h-date">${item.date}</span>
+             <span class="h-amount text-red">${formatCurrency(item.amount)} Kč</span>
+           </div>
+           <div class="h-note">${item.note}</div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    DOM.histModalBody.innerHTML = html;
+
+  } catch (e) {
+    DOM.histModalBody.innerHTML = `<div class="text-danger text-center">Chyba: ${e.message}</div>`;
+  }
+}
+
+// --- STANDARD MODALS ---
 function renderBrigadeerStats() {
   if (!STATE.cache.history) return;
   
@@ -333,7 +387,6 @@ function renderBrigadeerStats() {
           totalEarned += hrs * STATE.currentUser.rate;
       }
       
-      // Statistiky pro vybraný měsíc
       if (d.getFullYear() === y && (d.getMonth() + 1) === m) {
         if (isPast) { 
             earnedM += hrs * STATE.currentUser.rate; 
@@ -348,7 +401,6 @@ function renderBrigadeerStats() {
 
   const paid = h.allTransactions.reduce((sum, t) => t.amount < 0 ? sum + Math.abs(t.amount) : sum, 0);
   
-  // Aktualizace DOM prvků
   document.getElementById('b-planned-hours').textContent = planned.toFixed(1) + ' h';
   document.getElementById('b-planned-shifts').textContent = countP + ' směn';
   document.getElementById('b-worked-hours').textContent = workedM.toFixed(1) + ' h';
@@ -368,7 +420,6 @@ function renderBrigadeerStats() {
   document.getElementById('b-paid').textContent = `Vyplaceno: ${formatCurrency(Math.round(paid))} Kč`;
 }
 
-// --- MODALS (Day Detail) ---
 function openDayModal(dateObj, dateStr, shifts, confirmed) {
   const czDate = dateObj.toLocaleDateString('cs-CZ');
   document.getElementById('shiftModalDate').textContent = czDate;
@@ -385,7 +436,6 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
   const today = new Date(); today.setHours(0,0,0,0);
   const isPast = dateObj < today;
 
-  // 1. SCÉNÁŘ: Směna je již POTVRZENA
   if (confirmed) {
     const hrs = confirmed.timeFrom && confirmed.timeTo ? calcHours(confirmed.timeFrom, confirmed.timeTo) : 0;
     const rate = STATE.cache.userRates[confirmed.name] || 0;
@@ -398,14 +448,11 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
     }
 
     if (isAdm) {
-      // Admin: Může editovat
       body.innerHTML = html + `<div class="mb-2"><label class="text-label-bold">Čas:</label><div class="input-group" style="display:flex;gap:5px"><input type="time" id="mFrom" value="${confirmed.timeFrom}" class="styled-input"><input type="time" id="mTo" value="${confirmed.timeTo}" class="styled-input"></div></div><div class="mb-2"><label class="text-label-bold">Kdo:</label><select id="mUser" class="styled-input">${STATE.cache.users.map(u=>`<option ${u===confirmed.name?'selected':''}>${u}</option>`).join('')}</select></div>`;
       footer.innerHTML = `<button class="btn btn-success" onclick="actUpdate('${dateStr}','${confirmed.name}')">${ICON_CHECK} Potvrdit</button><button class="btn btn-danger" onclick="actDelete('${dateStr}','${confirmed.name}')">${ICON_X} Zrušit</button>`;
       
-      // Auto-update ceny při změně inputů
       setTimeout(()=> ['mFrom','mTo','mUser'].forEach(id=>document.getElementById(id).addEventListener('input', updatePrice)), 50);
     } else {
-      // Brigádník: Jen vidí
       body.innerHTML = html;
       if (isMe) {
           footer.innerHTML = `<button class="btn btn-danger full-width" onclick="actDelete('${dateStr}','${confirmed.name}')">${ICON_X} Zrušit směnu</button>`;
@@ -414,12 +461,9 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
       }
     }
   } 
-  // 2. SCÉNÁŘ: Jsou tam ZÁJEMCI (ale není potvrzeno)
   else if (shifts.length > 0) {
     if (isAdm) {
-      // Admin: Vybírá ze seznamu (dropdown)
       let firstApplicant = shifts[0].name;
-      // Vytvoříme možnosti pro select, zvýrazníme zájemce
       let options = STATE.cache.users.map(u => {
           let isApplicant = shifts.some(s => s.name === u);
           let label = u + (isApplicant ? ' (Zájem)' : ''); 
@@ -443,7 +487,6 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
       `;
       footer.innerHTML = `<button class="btn btn-success" onclick="actConfirm('${dateStr}')">${ICON_CHECK} Potvrdit</button><button class="btn btn-danger" onclick="actDelete('${dateStr}',null)">${ICON_X} Zrušit</button>`;
     } else {
-      // Brigádník: Vidí seznam zájemců a může se přidat
       const applied = shifts.some(s => s.name === STATE.currentUser.name);
       body.innerHTML = `<h4 class="text-center mb-2">Zájemci:</h4><ul class="mb-4 text-muted" style="padding-left:20px">` + shifts.map(s=>`<li>${s.name}</li>`).join('') + `</ul>` + (applied ? `<div class="status-pill gray">Máš zájem o směnu</div>` : '');
       
@@ -454,14 +497,11 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
       }
     }
   } 
-  // 3. SCÉNÁŘ: Volný termín (nic tam není)
   else {
     if (isAdm) {
-      // Admin: Vytváří novou
       body.innerHTML = `<h4 class="text-center mb-4">Nová směna</h4><div class="mb-2"><label class="text-label-bold">Kdo:</label><select id="mUser" class="styled-input">${STATE.cache.users.map(u=>`<option>${u}</option>`).join('')}</select></div><div class="mb-2"><label class="text-label-bold">Čas:</label><div class="input-group" style="display:flex;gap:5px"><input type="time" id="mFrom" value="13:00" class="styled-input"><input type="time" id="mTo" value="18:00" class="styled-input"></div></div>`;
       footer.innerHTML = `<button class="btn btn-success full-width" onclick="actCreate('${dateStr}')">${ICON_CHECK} Potvrdit</button>`;
     } else {
-      // Brigádník: Hlásí se
       if (isPast) {
          body.innerHTML = `<div class="status-pill gray">Termín již proběhl</div>`;
          footer.innerHTML = ``;
@@ -492,7 +532,6 @@ async function runAction(func, args) {
   try {
     const res = await serverCall(func, args);
     
-    // Mapping Backend Messages to Czech Toast Texts
     let msg = res.message;
     let type = 'success'; 
 
@@ -509,7 +548,6 @@ async function runAction(func, args) {
 
     showToast(msg, type);
 
-    // Refresh dat
     const [appData, histData] = await Promise.all([
       serverCall('getInitialAppData'),
       STATE.currentUser.role !== 'Admin' ? serverCall('getBrigadeerInitialData', [STATE.currentUser.name]) : null
@@ -526,7 +564,7 @@ async function runAction(func, args) {
   }
 }
 
-// --- GLOBAL EXPORTS FOR HTML ONCLICK ---
+// --- GLOBAL EXPORTS ---
 window.actApply = (d) => runAction('applyForShift', [d, STATE.currentUser.name]);
 window.actCancel = (d) => runAction('cancelApplication', [d, STATE.currentUser.name]);
 window.actCreate = (d) => runAction('adminCreateShift', [d, document.getElementById('mUser').value, document.getElementById('mFrom').value, document.getElementById('mTo').value]);
@@ -555,7 +593,6 @@ window.actDelete = (d, u) => {
 };
 
 window.openPayModal = (n, h, r, d) => {
-  // Kontrola prvků (pro jistotu)
   if(!DOM.payDialog || !DOM.payModalPayable) {
       console.error("DOM Elements missing for Payment Modal");
       return;
@@ -564,7 +601,7 @@ window.openPayModal = (n, h, r, d) => {
   DOM.payModalPayable.textContent = h+' h'; 
   DOM.payModalTotalDebt.textContent = formatCurrency(d)+' Kč';
   const inp = DOM.payInputHours; 
-  inp.value = h; // Předvyplníme celé dlužné hodiny
+  inp.value = h; 
   
   const recalc = () => {
      const val = Math.round((parseFloat(inp.value)||0) * r);

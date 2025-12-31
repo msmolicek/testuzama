@@ -1,5 +1,5 @@
-/* SOUBOR: css/components.css (v5.34 - COMPLETE) */
-/* POPIS: Kompletní styly pro UI komponenty (loader, toast, buttony, inputy). */
+/* SOUBOR: css/components.css (v5.45 - FINAL FLAT BADGE) */
+/* POPIS: Kompletní styly. Pilulka jména je 32px vysoká, bez stínu, sjednocená s tlačítkem. */
 
 /* --- 1. LOADER & SPINNER --- */
 #loader {
@@ -30,7 +30,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Spinner pro tabulku */
 .spinner-small-center {
   width: 24px;
   height: 24px;
@@ -467,6 +466,8 @@ select.styled-input {
   color: var(--c-green);
 }
 
+.text-green { color: var(--c-green); }
+
 .kpi-explain {
   font-size: 0.75rem;
   font-weight: 500;
@@ -474,7 +475,7 @@ select.styled-input {
   margin-top: 4px;
 }
 
-/* --- 8. ADMIN TABLE --- */
+/* --- 8. ADMIN TABLE & PILLS --- */
 .table-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -517,6 +518,49 @@ select.styled-input {
   text-align: left !important;
 }
 
+/* --- 8a. NAME PILL (BADGE STYLE) --- */
+/* Upraveno na fixní výšku 32px a bez stínu */
+.name-pill {
+  display: inline-flex;       
+  align-items: center;        
+  justify-content: center;    
+  
+  height: 32px;               /* PŘESNÁ VÝŠKA JAKO TLAČÍTKO VYPLATIT */
+  padding: 0 16px;            
+  
+  font-size: 0.85rem;         
+  border-radius: 50px;        
+  font-weight: 700;           
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.name-pill:active {
+  transform: scale(0.96);
+}
+
+/* Šedá varianta (neaktivní) */
+.name-pill.gray {
+  background-color: var(--c-input-bg);
+  color: var(--c-text-muted);
+}
+
+/* Zelená varianta (aktivní - má odpracováno) */
+.name-pill.green {
+  background-color: var(--c-green);
+  color: #000000;
+  /* Žádný stín (flat design) */
+}
+
+/* --- ACTIVE ROW STATE --- */
+.row-active td {
+  font-weight: 800 !important;
+  color: #000000 !important;
+}
+
+/* --- TOGGLES --- */
 .toggle-switch {
   background: var(--c-input-bg);
   padding: 3px;
@@ -599,29 +643,11 @@ dialog::backdrop {
   gap: 12px;
 }
 
-.modal-icon-lg {
-  width: 56px;
-  height: 56px;
-  background: var(--c-input-bg);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-}
-
 .modal-footer {
   display: flex;
   gap: 12px;
   margin-top: 24px;
   justify-content: center;
-}
-
-.modal-footer .btn {
-  width: auto;
-  min-width: 130px;
-  padding-left: 24px;
-  padding-right: 24px;
 }
 
 .btn-close-abs {
@@ -667,7 +693,51 @@ dialog::backdrop {
   color: var(--c-text-main);
 }
 
-/* --- 10. RESPONSIVE --- */
+/* --- 10. HISTORY LIST --- */
+.history-list-wrapper {
+  max-height: 300px;
+  overflow-y: auto;
+  margin: 0 -10px;
+  padding: 0 10px;
+}
+
+.history-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--c-border);
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.h-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.h-date {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--c-text-main);
+}
+
+.h-amount {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.h-note {
+  font-size: 0.75rem;
+  color: var(--c-text-muted);
+}
+
+.text-red {
+  color: var(--c-red);
+}
+
+/* --- 11. RESPONSIVE --- */
 @media (min-width: 768px) {
   .modal-content {
     padding: 40px;
