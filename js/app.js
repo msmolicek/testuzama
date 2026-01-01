@@ -1,11 +1,12 @@
-// SOUBOR: js/app.js (v5.45 - FINAL SYNC)
-// POPIS: Kompletní frontend. Jméno je klikatelná pilulka.
+// SOUBOR: js/app.js (v5.54 - TIMESTAMPS & SORTING)
+// POPIS: Implementace řazení zájemců v Admin modálu dle času přihlášení.
 
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxY0pfNreBWSFDAve0XUscwvYC7xiNcqowIPviOllbppkF0WGvJ2t-GHdGGfcJV1BIwfg/exec"; 
 
 // --- SVG ICONS (UI) ---
 const ICON_CHECK = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
 const ICON_X = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+const ICON_MONEY = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M12 15a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>`;
 
 // --- SVG ICONS (TOASTS) ---
 const T_ICON_SUCCESS = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--c-green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
@@ -216,6 +217,7 @@ function renderCalendarLocal() {
     
     let confirmed = dayShifts.find(s => s.status === 'Potvrzeno');
     let hasInterest = dayShifts.length > 0;
+    const applicantCount = dayShifts.length;
     
     const dayDate = new Date(y, m - 1, d);
     const isPast = dayDate < today;
@@ -244,7 +246,14 @@ function renderCalendarLocal() {
       html += `<div class="day-status"><div class="status-dot confirmed"></div></div><div class="status-badge-mini text-green">${confirmed.name}</div>`;
     } else if (hasInterest) {
       el.classList.add('s-pending');
-      html += `<div class="day-status"><div class="status-dot pending"></div></div><div class="status-badge-mini text-accent">${dayShifts.length} zájemců</div>`;
+      
+      if (applicantCount > 1) {
+         html += `<div class="day-status"><div class="status-dots-group"><div class="status-dot pending"></div><div class="status-dot pending"></div></div></div>`;
+      } else {
+         html += `<div class="day-status"><div class="status-dot pending"></div></div>`;
+      }
+      
+      html += `<div class="status-badge-mini text-accent">${applicantCount} zájemců</div>`;
     } else {
       html += `<div class="day-status"><div class="status-dot free"></div></div>`;
     }
@@ -274,9 +283,9 @@ async function updateAdminTableAsync(y, m) {
   const headerRow = document.querySelector('#adminStatsTable thead tr');
   
   if (STATE.adminViewMode === 'monthly') {
-      headerRow.innerHTML = `<th class="align-left">JMÉNO</th><th>HODIN</th><th>BILANCE</th>`;
+      headerRow.innerHTML = `<th>JMÉNO</th><th>HODIN</th><th>VYPLATIT</th>`;
   } else {
-      headerRow.innerHTML = `<th class="align-left">JMÉNO</th><th>HODIN</th><th>BILANCE</th><th>AKCE</th>`;
+      headerRow.innerHTML = `<th>JMÉNO</th><th>HODIN</th><th>VYPLATIT</th><th>AKCE</th>`;
   }
 
   const colSpan = STATE.adminViewMode === 'monthly' ? 3 : 4;
@@ -287,7 +296,7 @@ async function updateAdminTableAsync(y, m) {
     tbody.innerHTML = ''; 
 
     if (!stats.dashboardData.length) { 
-        tbody.innerHTML = `<tr><td colspan="${colSpan}" class="text-muted text-center py-4">Žádná data</td></tr>`; 
+        tbody.innerHTML = ''; 
         return; 
     }
     
@@ -311,7 +320,7 @@ async function updateAdminTableAsync(y, m) {
       
       if (STATE.adminViewMode === 'total') {
           const btn = parseFloat(u.payableHours) > 0 
-            ? `<button class="btn btn-success btn-table" onclick="openPayModal('${u.name}', ${u.payableHours}, ${u.rate}, ${u.toPay})">Vyplatit</button>` 
+            ? `<button class="btn-icon-circle" onclick="openPayModal('${u.name}', ${u.payableHours}, ${u.rate}, ${u.toPay})">${ICON_MONEY}</button>` 
             : '-';
           html += `<td>${btn}</td>`;
       }
@@ -436,6 +445,7 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
   const today = new Date(); today.setHours(0,0,0,0);
   const isPast = dateObj < today;
 
+  // --- 1. JIŽ POTVRZENÁ SMĚNA ---
   if (confirmed) {
     const hrs = confirmed.timeFrom && confirmed.timeTo ? calcHours(confirmed.timeFrom, confirmed.timeTo) : 0;
     const rate = STATE.cache.userRates[confirmed.name] || 0;
@@ -455,27 +465,54 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
     } else {
       body.innerHTML = html;
       if (isMe) {
-          footer.innerHTML = `<button class="btn btn-danger full-width" onclick="actDelete('${dateStr}','${confirmed.name}')">${ICON_X} Zrušit směnu</button>`;
+          footer.innerHTML = `<button class="btn btn-danger btn-fit" onclick="actDelete('${dateStr}','${confirmed.name}')">${ICON_X} Zrušit směnu</button>`;
       } else {
           footer.innerHTML = `<div class="text-center text-muted">Obsazeno</div>`;
       }
     }
   } 
+  // --- 2. JSOU ZÁJEMCI (PENDING) ---
   else if (shifts.length > 0) {
     if (isAdm) {
-      let firstApplicant = shifts[0].name;
-      let options = STATE.cache.users.map(u => {
-          let isApplicant = shifts.some(s => s.name === u);
-          let label = u + (isApplicant ? ' (Zájem)' : ''); 
-          let selected = (u === firstApplicant) ? 'selected' : '';
-          return `<option value="${u}" ${selected}>${label}</option>`;
-      }).join('');
+      // UPDATE: Řazení zájemců podle TIMESTAMP
+      const sortedShifts = [...shifts].sort((a, b) => {
+          const tA = a.timestamp ? new Date(a.timestamp).getTime() : 9999999999999;
+          const tB = b.timestamp ? new Date(b.timestamp).getTime() : 9999999999999;
+          return tA - tB;
+      });
+
+      const firstApplicantName = sortedShifts[0].name; // První (nejstarší) je default vybraný
+
+      // Vytvoření možností pro select
+      let optionsHtml = '';
+      
+      // A) Přidat ZÁJEMCE (s datem/časem)
+      sortedShifts.forEach(s => {
+          let timeLabel = '';
+          if (s.timestamp) {
+              const d = new Date(s.timestamp);
+              timeLabel = ` (${d.getDate()}.${d.getMonth()+1}. ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')})`;
+          }
+          const isSelected = (s.name === firstApplicantName) ? 'selected' : '';
+          optionsHtml += `<option value="${s.name}" ${isSelected}>${s.name}${timeLabel}</option>`;
+      });
+
+      // B) Přidat OSTATNÍ (abecedně)
+      const appliedNames = sortedShifts.map(s => s.name);
+      const otherUsers = STATE.cache.users.filter(u => !appliedNames.includes(u)).sort();
+      
+      if (otherUsers.length > 0) {
+          optionsHtml += `<option disabled>──────────</option>`; // Oddělovač
+          otherUsers.forEach(u => {
+              optionsHtml += `<option value="${u}">${u}</option>`;
+          });
+      }
 
       body.innerHTML = `
           <h4 class="text-center mb-2">Potvrdit směnu</h4>
           <div class="mb-2">
              <label class="text-label-bold">Brigádník:</label>
-             <select id="mUser" class="styled-input">${options}</select>
+             <select id="mUser" class="styled-input">${optionsHtml}</select>
           </div>
           <div class="mt-4">
              <label class="text-label-bold">Čas:</label>
@@ -493,21 +530,22 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
       if (isPast && !applied) {
          footer.innerHTML = `<div class="status-pill gray">Termín již proběhl</div>`;
       } else {
-         footer.innerHTML = `<button class="btn btn-${applied?'danger':'success'} full-width" onclick="${applied?'actCancel':'actApply'}('${dateStr}')">${applied ? ICON_X : ICON_CHECK} ${applied?'Zrušit směnu':'Mám zájem'}</button>`;
+         footer.innerHTML = `<button class="btn btn-${applied?'danger':'success'} btn-fit" onclick="${applied?'actCancel':'actApply'}('${dateStr}')">${applied ? ICON_X : ICON_CHECK} ${applied?'Zrušit zájem':'Mám zájem'}</button>`;
       }
     }
   } 
+  // --- 3. VOLNÝ TERMÍN (PRÁZDNO) ---
   else {
     if (isAdm) {
       body.innerHTML = `<h4 class="text-center mb-4">Nová směna</h4><div class="mb-2"><label class="text-label-bold">Kdo:</label><select id="mUser" class="styled-input">${STATE.cache.users.map(u=>`<option>${u}</option>`).join('')}</select></div><div class="mb-2"><label class="text-label-bold">Čas:</label><div class="input-group" style="display:flex;gap:5px"><input type="time" id="mFrom" value="13:00" class="styled-input"><input type="time" id="mTo" value="18:00" class="styled-input"></div></div>`;
-      footer.innerHTML = `<button class="btn btn-success full-width" onclick="actCreate('${dateStr}')">${ICON_CHECK} Potvrdit</button>`;
+      footer.innerHTML = `<button class="btn btn-success" onclick="actCreate('${dateStr}')">${ICON_CHECK} Potvrdit</button>`;
     } else {
       if (isPast) {
          body.innerHTML = `<div class="status-pill gray">Termín již proběhl</div>`;
          footer.innerHTML = ``;
       } else {
          body.innerHTML = `<div class="status-pill gray">Volný termín</div>`;
-         footer.innerHTML = `<button class="btn btn-success full-width" onclick="actApply('${dateStr}')">${ICON_CHECK} Mám zájem</button>`;
+         footer.innerHTML = `<button class="btn btn-success btn-fit" onclick="actApply('${dateStr}')">${ICON_CHECK} Mám zájem</button>`;
       }
     }
   }
@@ -564,34 +602,6 @@ async function runAction(func, args) {
   }
 }
 
-// --- GLOBAL EXPORTS ---
-window.actApply = (d) => runAction('applyForShift', [d, STATE.currentUser.name]);
-window.actCancel = (d) => runAction('cancelApplication', [d, STATE.currentUser.name]);
-window.actCreate = (d) => runAction('adminCreateShift', [d, document.getElementById('mUser').value, document.getElementById('mFrom').value, document.getElementById('mTo').value]);
-window.actUpdate = (d, old) => runAction('adminUpdateShift', [d, old, document.getElementById('mUser').value, document.getElementById('mFrom').value, document.getElementById('mTo').value]);
-
-window.actConfirm = (d) => {
-  const user = document.getElementById('mUser').value;
-  if(user) runAction('confirmShift', [d, user, document.getElementById('mFrom').value, document.getElementById('mTo').value]);
-};
-
-window.actDelete = (d, u) => {
-  const msgEl = document.getElementById('confirmMessage');
-  const btnEl = document.getElementById('confirmActionBtn');
-  
-  if (u) {
-      msgEl.innerHTML = `Opravdu smazat směnu pro: <strong>${u}</strong>?`;
-  } else {
-      msgEl.innerHTML = "Opravdu smazat zájemce o směnu?";
-  }
-  
-  btnEl.className = 'btn btn-danger';
-  btnEl.innerHTML = `${ICON_CHECK} Potvrdit`;
-
-  btnEl.onclick = () => { closeModal('confirmDialog'); runAction('adminDeleteShift', [d, u]); };
-  document.getElementById('confirmDialog').showModal();
-};
-
 window.openPayModal = (n, h, r, d) => {
   if(!DOM.payDialog || !DOM.payModalPayable) {
       console.error("DOM Elements missing for Payment Modal");
@@ -602,6 +612,14 @@ window.openPayModal = (n, h, r, d) => {
   DOM.payModalTotalDebt.textContent = formatCurrency(d)+' Kč';
   const inp = DOM.payInputHours; 
   inp.value = h; 
+  
+  inp.style.cssText = "max-width: 140px; margin: 0 auto; display: block; text-align: center; font-size: 1.5rem; font-weight: 800;";
+  
+  const submitBtn = DOM.payForm.querySelector('button[type="submit"]');
+  if(submitBtn) {
+      submitBtn.innerHTML = `${ICON_MONEY} Vyplatit`;
+      submitBtn.classList.remove('full-width'); 
+  }
   
   const recalc = () => {
      const val = Math.round((parseFloat(inp.value)||0) * r);

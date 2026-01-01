@@ -1,5 +1,5 @@
-/* SOUBOR: css/components.css (v5.45 - FINAL FLAT BADGE) */
-/* POPIS: Kompletní styly. Pilulka jména je 32px vysoká, bez stínu, sjednocená s tlačítkem. */
+/* SOUBOR: css/components.css (v5.52 - FINAL UI TUNING) */
+/* POPIS: Přidán univerzální round badge, vynuceno centrování tabulky. */
 
 /* --- 1. LOADER & SPINNER --- */
 #loader {
@@ -148,10 +148,11 @@
   padding: 0;
 }
 
+/* Toto je styl pro odhlašovací tlačítko - už je to kulatý šedý badge */
 .btn-icon-small {
-  background: var(--c-input-bg);
+  background: #E5E5EA;
   border: none;
-  padding: 10px;
+  padding: 0; /* Reset paddingu */
   border-radius: 50%;
   color: var(--c-text-main);
   cursor: pointer;
@@ -166,6 +167,18 @@
 .btn-icon-small:active {
   transform: scale(0.92);
   filter: brightness(0.95);
+}
+
+/* NOVÉ: Univerzální malý kulatý badge pro ikony (ne tlačítka) */
+.icon-badge-round {
+  background-color: var(--c-input-bg);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-text-main);
 }
 
 /* --- 4. CARDS & CONTAINERS --- */
@@ -186,15 +199,21 @@
   margin-bottom: 20px;
 }
 
+.card-label-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .card-label {
   text-transform: uppercase;
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--c-text-muted);
+  color: var(--c-text-main);
   letter-spacing: 0.5px;
 }
 
-/* --- 5. LOGIN TABS --- */
+/* --- 5. LOGIN TABS & FORM --- */
 .login-tabs-wrapper {
   display: flex;
   align-items: center;
@@ -239,6 +258,14 @@
   color: #000000;
   font-weight: 700;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.login-form-narrow {
+  width: fit-content;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; 
 }
 
 /* --- 6. INPUTS & BUTTONS --- */
@@ -322,6 +349,7 @@ select.styled-input {
   background-size: 16px;
 }
 
+/* General Buttons */
 .btn {
   border: none;
   padding: 0 24px;
@@ -335,6 +363,12 @@ select.styled-input {
   justify-content: center;
   gap: 10px;
   transition: var(--trans-fast);
+}
+
+.btn-fit {
+  width: auto;
+  min-width: 140px; 
+  padding: 0 32px;
 }
 
 .btn:active {
@@ -365,7 +399,7 @@ select.styled-input {
 
 .btn-success {
   background: var(--c-green);
-  color: #000000;
+  color: #FFFFFF; 
 }
 
 .btn-with-icon {
@@ -379,7 +413,33 @@ select.styled-input {
   stroke-width: 2.5px;
 }
 
-/* --- 7. KPI DASHBOARD --- */
+/* Round Icon Button for Table Pay Action */
+.btn-icon-circle {
+  border: none;
+  background-color: var(--c-input-bg);
+  color: #000000;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--trans-fast);
+}
+
+.btn-icon-circle:active {
+  transform: scale(0.92);
+  background-color: #d1d1d6;
+}
+
+.btn-icon-circle svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2px;
+}
+
+/* --- KPI DASHBOARD --- */
 .kpi-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -424,32 +484,22 @@ select.styled-input {
   margin-bottom: 6px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  display: inline-flex; 
+  align-items: center;
+  justify-content: center;
+  gap: 8px; 
+  white-space: nowrap; 
+  width: 100%;
+}
+
+/* Šedý kulatý podklad pro ikony v KPI */
+.kpi-icon-badge {
+  background-color: var(--c-input-bg);
+  padding: 8px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-}
-
-.kpi-label svg {
-  width: 14px;
-  height: 14px;
-  stroke-width: 2.5px;
-}
-
-.text-label-gray {
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: var(--c-text-muted);
-  letter-spacing: 0.5px;
-}
-
-.text-label-bold {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: var(--c-text-muted);
-  margin-bottom: 6px;
-  margin-left: 4px;
 }
 
 .kpi-val {
@@ -475,7 +525,13 @@ select.styled-input {
   margin-top: 4px;
 }
 
-/* --- 8. ADMIN TABLE & PILLS --- */
+.text-label-gray, .text-label-bold {
+  font-weight: 800;
+  color: var(--c-text-muted);
+  letter-spacing: 0.5px;
+}
+
+/* --- ADMIN TABLE & PILLS --- */
 .table-wrapper {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -498,6 +554,11 @@ select.styled-input {
   letter-spacing: 0.5px;
 }
 
+/* UPDATE: Vynucené centrování hlavičky prvního sloupce */
+.stats-table th:first-child {
+  text-align: center !important; 
+}
+
 .stats-table td {
   padding: 12px 6px;
   text-align: center;
@@ -509,23 +570,27 @@ select.styled-input {
   white-space: nowrap;
 }
 
+/* UPDATE: Vynucené centrování buněk prvního sloupce a tučné písmo */
 .stats-table td:first-child {
-  text-align: left;
-  font-weight: 600;
+  text-align: center !important;
+  font-weight: 700;
 }
 
-.align-left {
-  text-align: left !important;
+/* Třída align-left odstraněna, protože vše centrujeme */
+
+/* --- ACTIVE ROW STATE --- */
+.row-active td {
+  font-weight: 800 !important;
+  color: #000000 !important;
 }
 
-/* --- 8a. NAME PILL (BADGE STYLE) --- */
-/* Upraveno na fixní výšku 32px a bez stínu */
+/* --- NAME PILL (BADGE STYLE) --- */
 .name-pill {
   display: inline-flex;       
   align-items: center;        
   justify-content: center;    
   
-  height: 32px;               /* PŘESNÁ VÝŠKA JAKO TLAČÍTKO VYPLATIT */
+  height: 32px;               
   padding: 0 16px;            
   
   font-size: 0.85rem;         
@@ -535,29 +600,29 @@ select.styled-input {
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  border: 1px solid transparent;
 }
 
 .name-pill:active {
   transform: scale(0.96);
 }
 
-/* Šedá varianta (neaktivní) */
 .name-pill.gray {
   background-color: var(--c-input-bg);
   color: var(--c-text-muted);
 }
 
-/* Zelená varianta (aktivní - má odpracováno) */
 .name-pill.green {
-  background-color: var(--c-green);
+  background-color: rgba(52, 199, 89, 0.15);
+  border-color: rgba(52, 199, 89, 0.4);
   color: #000000;
-  /* Žádný stín (flat design) */
 }
 
-/* --- ACTIVE ROW STATE --- */
-.row-active td {
-  font-weight: 800 !important;
-  color: #000000 !important;
+/* --- CALENDAR MULTI DOTS --- */
+.status-dots-group {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
 }
 
 /* --- TOGGLES --- */
@@ -587,7 +652,7 @@ select.styled-input {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-/* --- 9. MODALS --- */
+/* --- MODALS --- */
 dialog {
   border: none;
   padding: 0;
@@ -666,6 +731,8 @@ dialog::backdrop {
   align-items: center;
   justify-content: center;
   transition: var(--trans-fast);
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
 
 .btn-close-abs:hover {
