@@ -152,7 +152,8 @@
 .btn-icon-small {
   background: #E5E5EA;
   border: none;
-  padding: 0; /* Reset paddingu */
+  padding: 0;
+  /* Reset paddingu */
   border-radius: 50%;
   color: var(--c-text-main);
   cursor: pointer;
@@ -265,7 +266,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  align-items: stretch; 
+  align-items: stretch;
 }
 
 /* --- 6. INPUTS & BUTTONS --- */
@@ -326,6 +327,7 @@ input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
 input[type=number] {
   -moz-appearance: textfield;
 }
@@ -336,6 +338,7 @@ input[type=number] {
   -webkit-appearance: none;
   margin: 0;
 }
+
 #payInputHours {
   -moz-appearance: textfield;
 }
@@ -367,7 +370,7 @@ select.styled-input {
 
 .btn-fit {
   width: auto;
-  min-width: 140px; 
+  min-width: 140px;
   padding: 0 32px;
 }
 
@@ -394,12 +397,12 @@ select.styled-input {
 
 .btn-danger {
   background: var(--c-red);
-  color: white; 
+  color: white;
 }
 
 .btn-success {
   background: var(--c-green);
-  color: #FFFFFF; 
+  color: #FFFFFF;
 }
 
 .btn-with-icon {
@@ -484,11 +487,11 @@ select.styled-input {
   margin-bottom: 6px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  display: inline-flex; 
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; 
-  white-space: nowrap; 
+  gap: 8px;
+  white-space: nowrap;
   width: 100%;
 }
 
@@ -500,6 +503,7 @@ select.styled-input {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--c-text-main); /* <--- TENTO ŘÁDEK PŘIDEJ (Černá barva) */
 }
 
 .kpi-val {
@@ -516,7 +520,9 @@ select.styled-input {
   color: var(--c-green);
 }
 
-.text-green { color: var(--c-green); }
+.text-green {
+  color: var(--c-green);
+}
 
 .kpi-explain {
   font-size: 0.75rem;
@@ -525,7 +531,8 @@ select.styled-input {
   margin-top: 4px;
 }
 
-.text-label-gray, .text-label-bold {
+.text-label-gray,
+.text-label-bold {
   font-weight: 800;
   color: var(--c-text-muted);
   letter-spacing: 0.5px;
@@ -556,7 +563,7 @@ select.styled-input {
 
 /* UPDATE: Vynucené centrování hlavičky prvního sloupce */
 .stats-table th:first-child {
-  text-align: center !important; 
+  text-align: center !important;
 }
 
 .stats-table td {
@@ -586,17 +593,17 @@ select.styled-input {
 
 /* --- NAME PILL (BADGE STYLE) --- */
 .name-pill {
-  display: inline-flex;       
-  align-items: center;        
-  justify-content: center;    
-  
-  height: 32px;               
-  padding: 0 16px;            
-  
-  font-size: 0.85rem;         
-  border-radius: 50px;        
-  font-weight: 700;           
-  
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 32px;
+  padding: 0 16px;
+
+  font-size: 0.85rem;
+  border-radius: 50px;
+  font-weight: 700;
+
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -680,8 +687,15 @@ dialog::backdrop {
 }
 
 @keyframes zoomIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .modal-content {
@@ -696,16 +710,20 @@ dialog::backdrop {
   margin: 20px;
 }
 
+/* SOUBOR: css/components.css - UPDATE */
 .modal-title {
   font-size: 1.3rem;
   font-weight: 800;
   color: var(--c-text-main);
   margin-bottom: 24px;
-  text-align: center;
+  /* UPDATE: Zarovnání vedle sebe a na střed */
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  /* Prvky vedle sebe */
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  gap: 10px;
+  /* Menší mezera mezi ikonou a textem */
 }
 
 .modal-footer {

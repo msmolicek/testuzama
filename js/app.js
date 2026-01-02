@@ -1,5 +1,6 @@
-// SOUBOR: js/app.js (v5.54 - TIMESTAMPS & SORTING)
-// POPIS: Implementace řazení zájemců v Admin modálu dle času přihlášení.
+// SOUBOR: js/app.js (v5.56 - MODAL LAYOUT CONSISTENCY)
+// POPIS: Sjednocení modálních oken. Vždy pořadí: 1. Brigádník (Select), 2. Čas (Input).
+//        Sjednocen popisek "Kdo:" -> "Brigádník:".
 
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxY0pfNreBWSFDAve0XUscwvYC7xiNcqowIPviOllbppkF0WGvJ2t-GHdGGfcJV1BIwfg/exec"; 
 
@@ -83,7 +84,10 @@ function initDOM() {
     historyDialog: document.getElementById('historyDialog'),
     histModalBody: document.getElementById('histModalBody'),
     histModalTitle: document.getElementById('histModalTitle'),
-    histModalSubtitle: document.getElementById('histModalSubtitle')
+    histModalSubtitle: document.getElementById('histModalSubtitle'),
+    // Confirm Actions
+    confirmMessage: document.getElementById('confirmMessage'),
+    confirmActionBtn: document.getElementById('confirmActionBtn')
   };
 }
 
@@ -422,7 +426,7 @@ function renderBrigadeerStats() {
   if(explainEl) explainEl.textContent = `${mm}/${y}`;
 
   const labelBalance = document.getElementById('b-balance-label-text');
-  if(labelBalance) labelBalance.textContent = "CELKEM (VŠE)";
+  if(labelBalance) labelBalance.textContent = "CELKEM";
   
   const balance = Math.max(0, totalEarned - paid);
   document.getElementById('b-balance').textContent = formatCurrency(Math.round(balance)) + ' Kč';
@@ -458,7 +462,20 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
     }
 
     if (isAdm) {
-      body.innerHTML = html + `<div class="mb-2"><label class="text-label-bold">Čas:</label><div class="input-group" style="display:flex;gap:5px"><input type="time" id="mFrom" value="${confirmed.timeFrom}" class="styled-input"><input type="time" id="mTo" value="${confirmed.timeTo}" class="styled-input"></div></div><div class="mb-2"><label class="text-label-bold">Kdo:</label><select id="mUser" class="styled-input">${STATE.cache.users.map(u=>`<option ${u===confirmed.name?'selected':''}>${u}</option>`).join('')}</select></div>`;
+      // UPDATE: Vykreslení - Nejdříve Brigádník (Select), potom Čas (Inputs)
+      body.innerHTML = html + `
+        <div class="mb-2">
+           <label class="text-label-bold">Brigádník:</label>
+           <select id="mUser" class="styled-input">${STATE.cache.users.map(u=>`<option ${u===confirmed.name?'selected':''}>${u}</option>`).join('')}</select>
+        </div>
+        <div class="mb-2">
+           <label class="text-label-bold">Čas:</label>
+           <div class="input-group" style="display:flex;gap:5px">
+             <input type="time" id="mFrom" value="${confirmed.timeFrom}" class="styled-input">
+             <input type="time" id="mTo" value="${confirmed.timeTo}" class="styled-input">
+           </div>
+        </div>
+      `;
       footer.innerHTML = `<button class="btn btn-success" onclick="actUpdate('${dateStr}','${confirmed.name}')">${ICON_CHECK} Potvrdit</button><button class="btn btn-danger" onclick="actDelete('${dateStr}','${confirmed.name}')">${ICON_X} Zrušit</button>`;
       
       setTimeout(()=> ['mFrom','mTo','mUser'].forEach(id=>document.getElementById(id).addEventListener('input', updatePrice)), 50);
@@ -474,19 +491,18 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
   // --- 2. JSOU ZÁJEMCI (PENDING) ---
   else if (shifts.length > 0) {
     if (isAdm) {
-      // UPDATE: Řazení zájemců podle TIMESTAMP
+      // Řazení zájemců podle TIMESTAMP
       const sortedShifts = [...shifts].sort((a, b) => {
           const tA = a.timestamp ? new Date(a.timestamp).getTime() : 9999999999999;
           const tB = b.timestamp ? new Date(b.timestamp).getTime() : 9999999999999;
           return tA - tB;
       });
 
-      const firstApplicantName = sortedShifts[0].name; // První (nejstarší) je default vybraný
+      const firstApplicantName = sortedShifts[0].name;
 
-      // Vytvoření možností pro select
       let optionsHtml = '';
       
-      // A) Přidat ZÁJEMCE (s datem/časem)
+      // A) ZÁJEMCI (s časem)
       sortedShifts.forEach(s => {
           let timeLabel = '';
           if (s.timestamp) {
@@ -497,17 +513,18 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
           optionsHtml += `<option value="${s.name}" ${isSelected}>${s.name}${timeLabel}</option>`;
       });
 
-      // B) Přidat OSTATNÍ (abecedně)
+      // B) OSTATNÍ (abecedně)
       const appliedNames = sortedShifts.map(s => s.name);
       const otherUsers = STATE.cache.users.filter(u => !appliedNames.includes(u)).sort();
       
       if (otherUsers.length > 0) {
-          optionsHtml += `<option disabled>──────────</option>`; // Oddělovač
+          optionsHtml += `<option disabled>──────────</option>`;
           otherUsers.forEach(u => {
               optionsHtml += `<option value="${u}">${u}</option>`;
           });
       }
 
+      // UPDATE: Vykreslení - Nejdříve Brigádník, potom Čas
       body.innerHTML = `
           <h4 class="text-center mb-2">Potvrdit směnu</h4>
           <div class="mb-2">
@@ -537,7 +554,20 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
   // --- 3. VOLNÝ TERMÍN (PRÁZDNO) ---
   else {
     if (isAdm) {
-      body.innerHTML = `<h4 class="text-center mb-4">Nová směna</h4><div class="mb-2"><label class="text-label-bold">Kdo:</label><select id="mUser" class="styled-input">${STATE.cache.users.map(u=>`<option>${u}</option>`).join('')}</select></div><div class="mb-2"><label class="text-label-bold">Čas:</label><div class="input-group" style="display:flex;gap:5px"><input type="time" id="mFrom" value="13:00" class="styled-input"><input type="time" id="mTo" value="18:00" class="styled-input"></div></div>`;
+      // UPDATE: Vykreslení - Nejdříve Brigádník (Kdo -> Brigádník), potom Čas
+      body.innerHTML = `
+        <h4 class="text-center mb-4">Nová směna</h4>
+        <div class="mb-2">
+           <label class="text-label-bold">Brigádník:</label>
+           <select id="mUser" class="styled-input">${STATE.cache.users.map(u=>`<option>${u}</option>`).join('')}</select>
+        </div>
+        <div class="mb-2">
+           <label class="text-label-bold">Čas:</label>
+           <div class="input-group" style="display:flex;gap:5px">
+             <input type="time" id="mFrom" value="13:00" class="styled-input">
+             <input type="time" id="mTo" value="18:00" class="styled-input">
+           </div>
+        </div>`;
       footer.innerHTML = `<button class="btn btn-success" onclick="actCreate('${dateStr}')">${ICON_CHECK} Potvrdit</button>`;
     } else {
       if (isPast) {
@@ -551,6 +581,57 @@ function openDayModal(dateObj, dateStr, shifts, confirmed) {
   }
   DOM.shiftDialog.showModal();
 }
+
+// --- USER ACTIONS ---
+window.actApply = (date) => runAction('applyForShift', [date, STATE.currentUser.name]);
+window.actCancel = (date) => runAction('cancelApplication', [date, STATE.currentUser.name]);
+
+window.actConfirm = (date) => {
+  const user = document.getElementById('mUser').value;
+  const from = document.getElementById('mFrom').value;
+  const to = document.getElementById('mTo').value;
+  runAction('confirmShift', [date, user, from, to]);
+};
+
+window.actDelete = (date, user) => {
+  if (!user && STATE.currentUser.role === 'Admin') {
+      const userEl = document.getElementById('mUser');
+      if(userEl) user = userEl.value;
+  }
+  
+  const msg = user ? `Opravdu smazat směnu pro: ${user}?` : "Opravdu smazat?";
+  DOM.confirmMessage.textContent = msg;
+  
+  const newBtn = DOM.confirmActionBtn.cloneNode(true);
+  DOM.confirmActionBtn.parentNode.replaceChild(newBtn, DOM.confirmActionBtn);
+  DOM.confirmActionBtn = newBtn;
+  
+  DOM.confirmActionBtn.addEventListener('click', () => {
+      closeModal('confirmDialog');
+      if (STATE.currentUser.role === 'Admin') {
+          runAction('adminDeleteShift', [date, user]);
+      } else {
+          runAction('cancelApplication', [date, STATE.currentUser.name]);
+      }
+  });
+  
+  closeModal('shiftDialog');
+  DOM.confirmDialog.showModal();
+};
+
+window.actCreate = (date) => {
+  const user = document.getElementById('mUser').value;
+  const from = document.getElementById('mFrom').value;
+  const to = document.getElementById('mTo').value;
+  runAction('adminCreateShift', [date, user, from, to]);
+};
+
+window.actUpdate = (date, oldUser) => {
+  const newUser = document.getElementById('mUser').value;
+  const from = document.getElementById('mFrom').value;
+  const to = document.getElementById('mTo').value;
+  runAction('adminUpdateShift', [date, oldUser, newUser, from, to]);
+};
 
 function updatePrice() {
   const f = document.getElementById('mFrom').value;
