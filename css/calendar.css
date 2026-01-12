@@ -1,7 +1,7 @@
-/* SOUBOR: css/calendar.css (v5.30 - Brigadeer Past Green) */
-/* POPIS: Styly kalendáře. Brigádník vidí své odpracované směny v minulosti zeleně. */
+/* SOUBOR: css/calendar.css (v6.1 - COMPLETE SPLIT SUPPORT) */
+/* POPIS: Styly kalendáře včetně nové fialové pro dělené směny (Split Shifts). */
 
-/* --- CALENDAR WRAPPER & HEADER --- */
+/* --- WRAPPER & HEADER --- */
 .calendar-wrapper {
   background: var(--c-card);
   border-radius: var(--radius);
@@ -93,9 +93,8 @@
   font-weight: 800;
 }
 
-/* --- LOGIKA MINULOSTI (DEFAULT = BRIGÁDNÍK) --- */
-
-/* 1. Základní stav minulosti: Šedivá, zamčená */
+/* --- LOGIKA MINULOSTI (Past) --- */
+/* Výchozí: Minulost je šedá a zamčená */
 .cal-day.past {
   opacity: 0.5;
   background-color: var(--c-input-bg);
@@ -103,17 +102,16 @@
   cursor: not-allowed;
 }
 
-/* UPDATE v5.30: VÝJIMKA PRO BRIGÁDNÍKA - ODPRACOVANÉ SMĚNY */
-/* Pokud je v minulosti potvrzená směna, ukaž ji zeleně a bez filtru */
-.cal-day.past.s-confirmed {
+/* VÝJIMKA: Pokud je směna potvrzená nebo dělená, je v minulosti vidět barevně */
+.cal-day.past.s-confirmed,
+.cal-day.past.s-split {
   opacity: 1;
-  background-color: rgba(52, 199, 89, 0.15);
-  border-color: rgba(52, 199, 89, 0.4);
-  filter: none; /* Zruší černobílý filtr */
-  cursor: pointer; /* Umožní rozkliknout detail pro kontrolu */
+  /* background barvy se dědí ze specifických tříd níže */
+  filter: none;
+  cursor: pointer;
 }
 
-/* --- STATES (Confirmed/Pending) --- */
+/* --- STATES (Barvy stavů) --- */
 .day-num {
   font-size: 0.85rem;
   font-weight: 600;
@@ -121,32 +119,34 @@
   color: var(--c-text-main);
 }
 
-/* 1. CONFIRMED (Zelená) */
+/* 1. CONFIRMED (Zelená - 1 člověk) */
 .s-confirmed {
   background-color: rgba(52, 199, 89, 0.15);
   border-color: rgba(52, 199, 89, 0.4);
 }
-
-.s-confirmed .day-num {
-  color: var(--c-text-main);
-}
-
 .s-confirmed .status-dot {
   background: var(--c-green);
 }
 
-/* 2. PENDING (Zájem - Žlutá) */
+/* 2. PENDING (Žlutá - Zájemci) */
 .s-pending {
   background-color: rgba(255, 204, 0, 0.15);
   border-color: rgba(255, 204, 0, 0.4);
 }
-
 .s-pending .day-num {
-  color: var(--c-text-main); 
+  color: var(--c-text-main);
 }
-
 .s-pending .status-dot {
   background: var(--c-gold);
+}
+
+/* 3. SPLIT SHIFT (Fialová - Více lidí) - NOVÉ */
+.s-split {
+  background-color: var(--c-purple-bg);
+  border-color: var(--c-purple);
+}
+.s-split .status-dot {
+  background: var(--c-purple);
 }
 
 /* --- DOTS & BADGES --- */
@@ -199,17 +199,10 @@
   display: inline-block;
 }
 
-.dot.confirmed {
-  background: var(--c-green);
-}
-
-.dot.pending {
-  background: var(--c-gold);
-}
-
-.dot.free {
-  border: 1px solid var(--c-border);
-}
+.dot.confirmed { background: var(--c-green); }
+.dot.pending { background: var(--c-gold); }
+.dot.split { background: var(--c-purple); } /* NOVÉ */
+.dot.free { border: 1px solid var(--c-border); }
 
 /* --- RESPONSIVE --- */
 @media (min-width: 768px) {
@@ -234,20 +227,16 @@
   }
 }
 
-/* --- ADMIN OVERRIDE (Nejsilnější pravidlo) --- */
-/* Admin vidí vše v minulosti "živé" */
+/* --- ADMIN OVERRIDE --- */
+/* Admin vidí v minulosti vše živé */
 body.is-admin .cal-day.past {
   opacity: 1;
   filter: none;
-  cursor: default; 
-  background-color: var(--c-card); 
+  cursor: default;
+  background-color: var(--c-card);
 }
 
 /* Vynucení barev pro Admina v minulosti */
-body.is-admin .cal-day.past.s-confirmed {
-  background-color: rgba(52, 199, 89, 0.15);
-}
-
-body.is-admin .cal-day.past.s-pending {
-  background-color: rgba(255, 204, 0, 0.15);
-}
+body.is-admin .cal-day.past.s-confirmed { background-color: rgba(52, 199, 89, 0.15); }
+body.is-admin .cal-day.past.s-pending { background-color: rgba(255, 204, 0, 0.15); }
+body.is-admin .cal-day.past.s-split { background-color: var(--c-purple-bg); }
